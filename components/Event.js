@@ -5,7 +5,7 @@ import 'react-calendar/dist/Calendar.css';
 import axios from 'axios'
 import Loading from './Loading';
 
-const Event = React.forwardRef(({toggleModal, fetchUpcomingEvents}, ref) => {
+const Event = React.forwardRef(({toggleModal}, ref) => {
 
   const eventTemplate = {
     email: '',
@@ -63,7 +63,7 @@ const Event = React.forwardRef(({toggleModal, fetchUpcomingEvents}, ref) => {
     const targetDate = moment(nextValue).format('DDMMYYYY')
 
     // console.log(targetDate)
-    axios.post(`${process.env.SERVER_URI}/schedule/slots`, {
+    axios.post(`${process.env.SERVER_URI}/schedule/meet/slots`, {
       date: targetDate
     })
     .then((response) => {
@@ -119,7 +119,7 @@ const Event = React.forwardRef(({toggleModal, fetchUpcomingEvents}, ref) => {
 
     setLoading(true)
 
-    axios.post(`${process.env.SERVER_URI}/event/test/create`, currentEvent)
+    axios.post(`${process.env.SERVER_URI}/meet/create`, currentEvent)
     .then((response) => {
 
       // console.log(response.data)
@@ -128,7 +128,6 @@ const Event = React.forwardRef(({toggleModal, fetchUpcomingEvents}, ref) => {
 
       setTimeout(() => {
         toggleModal()
-        fetchUpcomingEvents()
         setDates([])
         setSlots([])
         setEvent(eventTemplate)
