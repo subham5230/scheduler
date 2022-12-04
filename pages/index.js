@@ -10,7 +10,7 @@ import Image2 from "../assets/image2.webp";
 export default function Home() {
   const eventRef = React.useRef(null);
   return (
-    <div className="container px-4 h-screen flex justify-center items-center overflow-hidden">
+    <div className="container px-4 h-screen flex justify-center items-center overflow-x-hidden">
       <div className="lg:w-[70%] min-h-[80%] lg:h-[80%] flex">
         <div className="lg:w-1/2">
           <h1 className="text-6xl h-[20%] flex items-end font-brand font-semibold">
