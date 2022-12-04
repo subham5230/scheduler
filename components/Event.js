@@ -4,6 +4,8 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import axios from 'axios'
 import Loading from './Loading';
+import Toast from './Toast';
+import { validateEmail } from '../functions/Modal';
 
 const Event = React.forwardRef(({toggleModal}, ref) => {
 
@@ -21,12 +23,17 @@ const Event = React.forwardRef(({toggleModal}, ref) => {
   const [slots, setSlots] = React.useState([])
   const [value, setValue] = React.useState(new Date());
   const [event, setEvent] = React.useState(eventTemplate)
-  const [email, setEmail] = React.useState('subhammohanty5230@gmail.com')
-  const [meetingTitle, setMeetingTitle] = React.useState('')
+  const [email, setEmail] = React.useState('')
+  const [name, setName] = React.useState('')
+  const [meetingTitle, setMeetingTitle] = React.useState('<YOUR NAME> <> Subham Mohanty')
   const [meetingDescription, setMeetingDescription] = React.useState('')
   const [loading, setLoading] = React.useState(false)
   const [slotLoading, setSlotLoading] = React.useState(false)
   const [eventStage, setEventStage] = React.useState(0)
+  const [toastMessage, setToastMessage] = React.useState('')
+  React.useEffect(()=>{
+    name.length>0? setMeetingTitle(`${name} <> Subham Mohanty`) : setMeetingTitle('<YOUR NAME> <> Subham Mohanty')
+  }, [name])
 
   React.useImperativeHandle(ref, () => ({
 
@@ -42,7 +49,6 @@ const Event = React.forwardRef(({toggleModal}, ref) => {
     },
 
     fetchDatesWrapper(){
-      setMeetingTitle(`${email} <> Subham Mohanty`)
       setMeetingDescription(`30 Minutes Meeting`)
       fetchDates()
     }, 
@@ -112,7 +118,19 @@ const Event = React.forwardRef(({toggleModal}, ref) => {
   }
 
   async function createEvent(){
+
+    if(email.length < 1 || name.length < 1){
+      setToastMessage("Please enter all the details")
+      return
+    }
+    if(!validateEmail(email)){
+      setToastMessage("Please enter a valid email")
+      return
+    
+    }
+
     const currentEvent = event
+    currentEvent.email = email
     currentEvent.summary = meetingTitle
     currentEvent.description = meetingDescription
     // console.log(currentEvent)
@@ -133,8 +151,10 @@ const Event = React.forwardRef(({toggleModal}, ref) => {
         setEvent(eventTemplate)
         setEventStage(0)
         setMeetingDescription('')
-        setMeetingTitle('')    
-      }, 2000);
+        setMeetingTitle('')
+        setEmail('')    
+        setName('')
+      }, 3000);
       
       
     })
@@ -152,7 +172,9 @@ const Event = React.forwardRef(({toggleModal}, ref) => {
         setEventStage(0)
         setMeetingDescription('')
         setMeetingTitle('')    
-      }, 2000);
+        setEmail('')    
+        setName('')
+      }, 3000);
     })
 
   }
@@ -180,7 +202,7 @@ const Event = React.forwardRef(({toggleModal}, ref) => {
     return (
       <div className='flex h-[80%] w-[95%] items-end justify-center'>
        <div className='h-full w-[70%] flex flex-col justify-center items-center'>
-              <div className='w-[90%] h-[15%] flex items-center text-3xl font-proximaRegular tracking-wide justify-center'><span className='text-4xl font-semibold'>{dates.availableTime?.duration}&nbsp;</span> minutes meeting</div>
+              <div className='w-[90%] h-[15%] flex items-center text-3xl font-proximaRegular tracking-wide'><span className='text-4xl font-semibold'>{dates.availableTime?.duration}&nbsp;</span> minutes meeting</div>
               {/* <div className='w-[90%] h-[15%] flex items-center text-3xl font-semibold font-proximaRegular tracking-wider'>30 minutes meeting</div> */}
               <div className='w-[90%] h-[85%] flex justify-center items-center'>
               <Calendar
@@ -197,7 +219,7 @@ const Event = React.forwardRef(({toggleModal}, ref) => {
 
         <div className='h-[90%] w-[30%] overflow-y-auto'>
           {
-            slotLoading? <Loading type='bubbles' color='#F4B301' /> 
+            slotLoading? <Loading type='bubbles' color='#6151c9' /> 
             :
             event.date.length>0 && slots.length>0 ?
 
@@ -213,7 +235,7 @@ const Event = React.forwardRef(({toggleModal}, ref) => {
                                             );
 
                 return(
-                  <button onClick={()=>{handleEventStageZero(slot)}} key={slots.indexOf(slot)} className='bg-yellow-400 hover:bg-yellow-300 font-proximaRegular text-black h-[15%] w-[90%] flex items-center justify-center my-4'>{timeString12hr}</button>
+                  <button onClick={()=>{handleEventStageZero(slot)}} key={slots.indexOf(slot)} className='bg-[#604ea3] hover:bg-[#393072] font-proximaRegular text-white h-[15%] w-[90%] flex items-center justify-center my-4'>{timeString12hr}</button>
                 )
               
               })
@@ -250,30 +272,34 @@ const Event = React.forwardRef(({toggleModal}, ref) => {
         <div className='text-white text-3xl w-full h-[10%] font-proximaRegular flex tracking-wider'>Confirm Meeting</div>
         <div className='w-full h-[75%] flex flex-col justify-start overflow-y-auto'>
           <div className='w-[90%] h-[10%] flex justify-around my-4'>
-            <div className='w-[30%] h-full font-proximaRegular flex items-center tracking-wider text-gray-400'>Meeting Title:</div>
-            <input value={meetingTitle} className='border border-gray-400 w-[60%] h-full bg-transparent font-proximaRegular px-4'
+            <div className='w-[30%] h-full font-proximaRegular flex items-center tracking-wider text-gray-50'>Your Email:</div>
+            <input value={email} placeholder="Enter your email" className='border border-gray-400 w-[60%] h-full bg-transparent font-proximaRegular px-4'
               onChange={(e)=> {
-                setMeetingTitle(e.target.value)
+                setEmail(e.target.value)
               }}
             ></input>
           </div>
-          <div className='w-[90%]  flex justify-around my-4'>
-            <div className='w-[30%] h-full font-proximaRegular flex tracking-wider text-gray-400'>Description:</div>
-            <textarea value={meetingDescription} className='border border-gray-400 w-[60%] h-full bg-transparent font-proximaRegular px-4'
+          <div className='w-[90%] h-[10%] flex justify-around my-4'>
+            <div className='w-[30%] h-full font-proximaRegular flex items-center tracking-wider text-gray-50'>Your Name:</div>
+            <input value={name} placeholder='Enter your name' className='border border-gray-400 w-[60%] h-full bg-transparent font-proximaRegular px-4'
               onChange={(e)=> {
-                setMeetingDescription(e.target.value)
+                setName(e.target.value)
               }}
-            ></textarea>
+            ></input>
           </div>
           <div className='w-[90%] h-[10%] flex justify-around my-4'>
-            <div className='w-[30%] h-full font-proximaRegular flex items-center tracking-wider text-gray-400'>Start:</div>
+            <div className='w-[30%] h-full font-proximaRegular flex items-center tracking-wider text-gray-50'>Meeting Title:</div>
+            <div className='w-[60%] h-full bg-transparent font-proximaRegular flex items-center text-gray-400'>{meetingTitle}</div>
+          </div>
+          <div className='w-[90%] h-[10%] flex justify-around my-4'>
+            <div className='w-[30%] h-full font-proximaRegular flex items-center tracking-wider text-gray-50'>Start:</div>
             <div className='w-[60%] h-full bg-transparent font-proximaRegular flex items-center text-gray-400'>{`${moment(event.date, 'YYYY-MM-DD').format('DD MMMM YYYY')} ${new Date('1970-01-01T' + event.startTime + 'Z')
                                           .toLocaleTimeString('en-US',
                                             {hour12:true,hour:'numeric',minute:'numeric'}
                                           )}`}</div>
           </div>
           <div className='w-[90%] h-[10%] flex justify-around my-4'>
-            <div className='w-[30%] h-full font-proximaRegular flex items-center tracking-wider text-gray-400'>End:</div>
+            <div className='w-[30%] h-full font-proximaRegular flex items-center tracking-wider text-gray-50'>End:</div>
             <div className='w-[60%] h-full bg-transparent font-proximaRegular flex items-center text-gray-400'>{`${moment(event.date, 'YYYY-MM-DD').format('DD MMMM YYYY')} ${new Date('1970-01-01T' + event.endTime + 'Z')
                                           .toLocaleTimeString('en-US',
                                             {hour12:true,hour:'numeric',minute:'numeric'}
@@ -281,7 +307,7 @@ const Event = React.forwardRef(({toggleModal}, ref) => {
           </div>
         </div>
         <div className='w-full h-[10%] flex justify-end'>
-          <button onClick={createEvent} className='text-black bg-yellow-400 font-proximaRegular h-full w-[20%] text-xl'>Confirm</button>
+          <button onClick={createEvent} className='bg-[#7130db] font-proximaRegular h-full w-[20%] text-xl'>Confirm</button>
         </div>
       </div>
     )
@@ -290,8 +316,8 @@ const Event = React.forwardRef(({toggleModal}, ref) => {
   const EventCreateSuccessfulComponent = () => {
     return(
       <div className='w-[85%] h-[85%] flex flex-col justify-center items-center'>
-        <div className=' w-[80%] h-[20%] text-6xl flex justify-center items-center text-yellow-400 font-proximaRegular'>Success</div>
-        <div className=' font-proximaRegular w-[80%] h-[20%] text-xl flex justify-center items-center'>Your meeting was approved, see you soon!</div>
+        <div className=' w-[80%] h-[20%] text-6xl flex justify-center items-center text-[#02d371] font-proximaRegular'>Success</div>
+        <div className='text-center font-proximaRegular w-[80%] h-[20%] text-xl flex justify-center items-center'>Your slot has been booked successfully. Please check your email or google calendar for an invite. See you soon!</div>
       </div>
     )
   }
@@ -299,8 +325,8 @@ const Event = React.forwardRef(({toggleModal}, ref) => {
   const EventCreateFailureComponent = () => {
     return(
       <div className='w-[85%] h-[85%] flex flex-col justify-center items-center'>
-        <div className='w-[80%] h-[20%] text-6xl flex justify-center items-center text-yellow-400 font-proximaRegular'>Oops...</div>
-        <div className='font-proximaRegular w-[90%] h-[20%] text-xl flex justify-center items-center'>We couldn&apos;t process your request for this slot, Please try again later.</div>
+        <div className='w-[80%] h-[20%] text-6xl flex justify-center items-center text-[#bb004e] font-proximaRegular'>Oops...</div>
+        <div className='text-center font-proximaRegular w-[90%] h-[20%] text-xl flex justify-center items-center'>Something went wrong while processing your request for this slot, Please try again later.</div>
       </div>
     )
   }
@@ -319,8 +345,9 @@ const Event = React.forwardRef(({toggleModal}, ref) => {
   return (
     <>
     {
-      loading? <Loading type='spinningBubbles' color='#F4B301' /> : renderView()
+      loading? <Loading type='spinningBubbles' color='#6151c9' /> : renderView()
     }
+    <Toast message={toastMessage} setMessage={setToastMessage} />
     </>
   )
 })
